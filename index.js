@@ -13,6 +13,10 @@ const port = process.env.PORT || 3000;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.get("/", (req, res)=>{
+  res.status(200).json({message: "Welcome to Steam Finder Rest API"});
+})
+
 // POST endpoint for SteamID conversion
 app.post('/search', async (req, res) => {
   const input = req.body.steamid;
