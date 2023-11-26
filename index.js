@@ -3,6 +3,10 @@ const bodyParser = require('body-parser');
 const SteamID = require('steamid');
 const xml2js = require('xml2js');
 
+// Caching Requests
+const NodeCache = require("node-cache");
+const myCache = new NodeCache();
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -13,27 +17,32 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.post('/search', async (req, res) => {
   const input = req.body.steamid;
 
-  if(!input)  return res.json({message: "Steamid field is missing!"});
+  if (myCache.has("data_" + input)) {
+    console.log("Cache Data Get");
+    return res.status(200).json(myCache.get("data_" + input));
+  }
 
-  // Check if input is a Steam profile link
+  if (!input) return res.status(400).json({ message: "Steamid field is missing!" });
+
+  let steamID;
   if (input.includes('steamcommunity.com')) {
     const steamID64 = await getSteamIDFromProfileLink(input);
-    const steamID = new SteamID(steamID64);
-
-    res.json({
-      steamID3: steamID.getSteam3RenderedID(),
-      steamID2: steamID.getSteam2RenderedID(),
-      steamID64: steamID64
-    });
+    steamID = new SteamID(steamID64);
   } else {
-    const steamID = new SteamID(input);
-
-    res.json({
-      steamID3: steamID.getSteam3RenderedID(),
-      steamID2: steamID.getSteam2RenderedID(),
-      steamID64: steamID.getSteamID64()
-    });
+    steamID = new SteamID(input);
   }
+
+  const response = {
+    steamID3: steamID.getSteam3RenderedID(),
+    steamID2: steamID.getSteam2RenderedID(),
+    steamID64: steamID.getSteamID64()
+  }
+
+  console.log("Cache Data Set")
+  myCache.set("data_" + input, response);
+
+  res.status(200).json(response);
+
 });
 
 // Helper function to get SteamID from Steam profile link
@@ -54,9 +63,9 @@ function getSteamIDFromProfileLink(link) {
         const url = `https://steamcommunity.com/id/${vanityMatch[1]}/?xml=1`;
         const request = require('request');
 
-        request(url, function(error, response, body) {
+        request(url, function (error, response, body) {
           if (!error && response.statusCode == 200) {
-            parser.parseString(body, function(err, result) {
+            parser.parseString(body, function (err, result) {
               if (err) {
                 reject(err);
               } else {
