@@ -1,29 +1,20 @@
-const https = require('https');
 
-function getUserInfo(steamID64, API_KEY) {
+async function getUserInfo(steamID64, API_KEY) {
     const apiUrl = `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${API_KEY}&steamids=${steamID64}`;
 
-    return new Promise((resolve, reject) => {
-        https.get(apiUrl, (response) => {
-            let data = '';
+    try {
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
 
-            response.on('data', (chunk) => {
-                data += chunk;
-            });
-
-            response.on('end', () => {
-                try {
-                    const userData = JSON.parse(data);
-                    resolve(userData);
-                } catch (error) {
-                    reject(error);
-                }
-            });
-        }).on('error', (error) => {
-            reject(error);
-        });
-    });
+        const userData = await response.json();
+        return userData;
+    } catch (error) {
+        throw error;
+    }
 }
+
 
 
 module.exports = {
