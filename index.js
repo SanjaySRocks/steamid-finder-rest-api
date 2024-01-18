@@ -19,7 +19,7 @@ const steamApiKey = process.env.STEAM_API_KEY;
 
 // Main Code
 app.get("/", (req, res) => {
-	res.status(200).json({ message: "Welcome to Steam Finder Rest API" });
+	res.status(200).json({ message: "Welcome to Steam Finder Rest API", version: 1.2 });
 })
 
 
