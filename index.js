@@ -1,19 +1,23 @@
+require('dotenv').config();
 const express = require('express');
-const bodyParser = require('body-parser');
 const SteamID = require('steamid');
 const xml2js = require('xml2js');
-
-// Caching Requests
 const NodeCache = require("node-cache");
+
 const { getUserInfo } = require('./steamFunctions');
 const myCache = new NodeCache();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// for parsing application/json
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true })); 
 
+
+const steamApiKey = process.env.STEAM_API_KEY;
+
+// Main Code
 app.get("/", (req, res) => {
 	res.status(200).json({ message: "Welcome to Steam Finder Rest API" });
 })
@@ -44,13 +48,14 @@ app.post('/search', async (req, res) => {
 		if(!steamID.isValid())
 			throw new Error("Enter valid steamid!");
 
-		const details = await getUserInfo(steamID.getSteamID64(), "D6B52829DA66DFD1EE4D7A8BE956DE9E");
+		const details = await getUserInfo(steamID.getSteamID64(), steamApiKey);
+        // console.log(details);
 
 		const response = {
 			steamID3: steamID.getSteam3RenderedID(),
 			steamID2: steamID.getSteam2RenderedID(),
 			steamID64: steamID.getSteamID64(),
-			details: details.response.players[0]
+			profile: details.response.players[0]
 		}
 
 		console.log("Cache Data Set")
@@ -64,6 +69,8 @@ app.post('/search', async (req, res) => {
 	}
 });
 
+// Old Fn
+/*
 function getSteamIDFromProfileLinkV1(link) {
     return new Promise((resolve, reject) => {
         const parser = new xml2js.Parser();
@@ -105,8 +112,9 @@ function getSteamIDFromProfileLinkV1(link) {
         }
     });
 }
+*/
 
-
+// New Fn
 async function getSteamIDFromProfileLinkV2(link) {
     try {
         const steamIDRegex = /steamcommunity\.com\/profiles\/([0-9]+)/;
