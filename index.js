@@ -32,7 +32,7 @@ app.post('/search', async (req, res) => {
 		return res.status(200).json(myCache.get("data_" + input));
 	}
 
-	if (!input) return res.status(400).json({ message: "Steamid field is missing!" });
+	if (!input) return res.status(200).json({ message: "Steamid field is missing!" });
 
 	try {
 
@@ -65,7 +65,7 @@ app.post('/search', async (req, res) => {
 		res.status(200).json(response);
 	}
 	catch (error) {
-		res.status(500).json({ message: "Something went wrong!", error: error.message });
+		res.status(200).json({ message: "Something went wrong!", error: error.message });
 	}
 });
 
