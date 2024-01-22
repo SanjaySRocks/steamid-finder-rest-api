@@ -112,7 +112,7 @@ class Steam{
 
 // Main Code
 app.get("/", (req, res) => {
-	res.status(200).json({ message: "Welcome to Steam Finder Rest API", version: 1.2 });
+	res.status(200).json({ message: "Welcome to Steam Finder Rest API", version: "1.2.2" });
 })
 
 
